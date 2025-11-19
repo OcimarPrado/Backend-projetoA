@@ -4,11 +4,18 @@ import { PrismaClient } from '@prisma/client';
 
 const app = express();
 const prisma = new PrismaClient();
-const PORT = process.env.PORT || 3000;
 
-// CORS seguro para produção
+// Railway fornece a porta via ENV, não usar fixo
+const PORT = process.env.PORT;
+
+if (!PORT) {
+  console.error("⚠️ Nenhuma porta detectada. O Railway precisa de process.env.PORT");
+  process.exit(1);
+}
+
+// CORS seguro (liberando tudo por enquanto)
 app.use(cors({
-  origin: "*",   // depois posso restringir para domínio da Vercel
+  origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
@@ -27,7 +34,6 @@ app.get('/contrato/:id/gerar-pdf', async (req, res) => {
     }
 
     res.send(`Gerando PDF do contrato ${id}...`);
-
   } catch (err) {
     console.error('Erro ao gerar PDF:', err);
     res.status(500).json({ error: 'Erro interno ao gerar PDF.' });
@@ -76,8 +82,10 @@ app.post('/api/aceite-contrato', async (req, res) => {
   }
 });
 
+// rota raiz de teste
 app.get('/', (req, res) => res.send('Servidor Ocyan-Tech rodando!'));
 
+// iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
